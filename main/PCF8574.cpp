@@ -1,5 +1,6 @@
 // PCF8574.cpp
 #include "PCF8574.h"
+#include "esp_err.h"
 
 PCF8574::PCF8574(I2CManager& i2c_manager, uint8_t device_addr)
         : i2c_manager_(i2c_manager), device_addr_(device_addr), state_(0xFF) {} // Initialize with all HIGH (inputs)
