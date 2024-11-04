@@ -8,11 +8,19 @@ PCF8574::PCF8574(I2CManager &i2c_manager, const uint8_t device_addr)
 
 esp_err_t PCF8574::write(const uint8_t data) {
     state_ = data;
-    return i2c_manager_.write(device_addr_, &data, 1);
+    esp_err_t ret = i2c_manager_.write(device_addr_, &data, 1);
+    if (ret != ESP_OK) {
+        ESP_LOGE("PCF8574", "Write failed to address 0x%02X with data 0x%02X", device_addr_, data);
+    }
+    return ret;
 }
 
 esp_err_t PCF8574::read(uint8_t &data) const {
-    return i2c_manager_.read(device_addr_, &data, 1);
+    esp_err_t ret = i2c_manager_.read(device_addr_, &data, 1);
+    if (ret != ESP_OK) {
+        ESP_LOGE("PCF8574", "Read failed from address 0x%02X", device_addr_);
+    }
+    return ret;
 }
 
 esp_err_t PCF8574::setPin(const uint8_t pin, const bool level) {

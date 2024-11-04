@@ -1,6 +1,7 @@
 // PCF8574.h
 #pragma once
 #include "I2CManager.h"
+#include "esp_log.h"
 
 class PCF8574 {
 public:

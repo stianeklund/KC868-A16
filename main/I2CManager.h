@@ -10,6 +10,7 @@ public:
     [[nodiscard]] esp_err_t init() const;
     esp_err_t write(uint8_t device_addr, const uint8_t* data, size_t length) const;
     esp_err_t read(uint8_t device_addr, uint8_t* data, size_t length) const;
+    [[nodiscard]] esp_err_t scan() const;
 
 private:
     i2c_port_t i2c_num_;

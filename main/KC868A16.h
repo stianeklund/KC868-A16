@@ -8,6 +8,9 @@ public:
     
     // Initialize the board
     esp_err_t init();
+
+    // Reference to the I2C manager for direct access
+    I2CManager& getI2CManager() { return i2c_manager_; }
     
     // Set single output (1-16)
     esp_err_t setOutput(uint8_t output, bool state);
@@ -19,13 +22,13 @@ public:
     esp_err_t getOutput(uint8_t output, bool& state);
 
 private:
-    // Convert 8-bit Arduino addresses (0x3C, 0x3D) to 7-bit addresses by shifting right
-    static constexpr uint8_t PCF8574_R1_ADDR = 0x3C >> 1; // First relay PCF8574 (0x1E)
-    static constexpr uint8_t PCF8574_R2_ADDR = 0x3D >> 1; // Second relay PCF8574 (0x1F)
+    // PCF8574 7-bit I2C addresses for relay control
+    static constexpr uint8_t PCF8574_R1_ADDR = 0x24; // First relay PCF8574 (outputs 1-8)
+    static constexpr uint8_t PCF8574_R2_ADDR = 0x25; // Second relay PCF8574 (outputs 9-16)
     
     // Input PCF8574s (not used for relay control but keeping for reference)
-    static constexpr uint8_t PCF8574_I1_ADDR = 0x3A >> 1; // First input PCF8574 (0x1D)
-    static constexpr uint8_t PCF8574_I2_ADDR = 0x39 >> 1; // Second input PCF8574 (0x1C)
+    static constexpr uint8_t PCF8574_I1_ADDR = 0x26; // First input PCF8574
+    static constexpr uint8_t PCF8574_I2_ADDR = 0x27; // Second input PCF8574
     
     PCF8574 pcf8574_1_;
     PCF8574 pcf8574_2_;
