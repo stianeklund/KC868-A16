@@ -36,24 +36,33 @@ EthernetManager::~EthernetManager() {
 }
 
 esp_err_t EthernetManager::initInternal() {
-    eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
+    constexpr eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
 
     phy_config.phy_addr = ETH_PHY_ADDR;
     phy_config.reset_gpio_num = ETH_PHY_RST_GPIO;
 
-    eth_esp32_emac_config_t esp32_emac_config = {
+    constexpr eth_esp32_emac_config_t esp32_emac_config = {
         .smi_mdc_gpio_num = ETH_MDC_GPIO,
         .smi_mdio_gpio_num = ETH_MDIO_GPIO,
         .interface = EMAC_DATA_INTERFACE_RMII,
         .clock_config = {
             .rmii = {
                 .clock_mode = EMAC_CLK_OUT,
-                .clock_gpio = EMAC_CLK_OUT_180_GPIO
+                .clock_gpio = static_cast<emac_rmii_clock_gpio_t>(ETH_CLK_GPIO)  // Use GPIO17 for clock output
             }
         },
         .dma_burst_len = ETH_DMA_BURST_LEN_32
     };
+
+    // Configure GPIO17 for clock output before creating MAC
+    gpio_config_t gpio_conf = {};
+    gpio_conf.pin_bit_mask = (1ULL << ETH_CLK_GPIO);
+    gpio_conf.mode = GPIO_MODE_OUTPUT;
+    gpio_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    gpio_conf.intr_type = GPIO_INTR_DISABLE;
+    ESP_ERROR_CHECK(gpio_config(&gpio_conf));
 
     esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&esp32_emac_config, &mac_config);
     if (!mac) return ESP_FAIL;
@@ -64,9 +73,8 @@ esp_err_t EthernetManager::initInternal() {
         return ESP_FAIL;
     }
 
-    esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
-    esp_err_t ret = esp_eth_driver_install(&config, &eth_handle_);
-    if (ret != ESP_OK) {
+    const esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
+    if (const esp_err_t ret = esp_eth_driver_install(&config, &eth_handle_); ret != ESP_OK) {
         mac->del(mac);
         phy->del(phy);
         return ret;
@@ -78,8 +86,7 @@ esp_err_t EthernetManager::initInternal() {
 esp_err_t EthernetManager::configureStaticIP() const {
     if (!use_static_ip_) return ESP_OK;
 
-    esp_err_t ret = esp_netif_dhcpc_stop(eth_netif_);
-    if (ret != ESP_OK) {
+    if (const esp_err_t ret = esp_netif_dhcpc_stop(eth_netif_); ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to stop DHCP client");
         return ret;
     }

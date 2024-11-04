@@ -8,10 +8,12 @@
 
 class EthernetManager {
 public:
-    static constexpr int ETH_PHY_ADDR = 1;
+    // LAN8720 configuration matching ESPHome
+    static constexpr int ETH_PHY_ADDR = 0;      // phy_addr: 0
     static constexpr int ETH_PHY_RST_GPIO = -1; // not connected
-    static constexpr int ETH_MDC_GPIO = 23;
-    static constexpr int ETH_MDIO_GPIO = 18;
+    static constexpr int ETH_MDC_GPIO = 23;     // mdc_pin: GPIO23
+    static constexpr int ETH_MDIO_GPIO = 18;    // mdio_pin: GPIO18
+    static constexpr int ETH_CLK_GPIO = 17;     // clk_mode: GPIO17_OUT
 
 
     // Event group bits
