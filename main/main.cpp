@@ -8,6 +8,26 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
+// cycles through the outputs 1-16 for testing purposes
+void cycle_outputs(KC868A16& board) {
+    static uint8_t current_output = 1;
+    static uint8_t previous_output = 16;
+    
+    // Turn off the previous output
+    board.setOutput(previous_output, false);
+    ESP_LOGI("STROBE", "Turning off output %d", previous_output);
+    
+    // Turn on the current output
+    board.setOutput(current_output, true);
+    ESP_LOGI("STROBE", "Turning on output %d", current_output);
+    
+    // Store current output as previous for next iteration
+    previous_output = current_output;
+    
+    // Move to next output, wrap around to 1 if we reach 17
+    current_output = (current_output % 16) + 1;
+}
+
 extern "C" {
 [[noreturn]] int app_main();
 }
@@ -41,21 +61,9 @@ extern "C" {
     ESP_ERROR_CHECK(board.init());
     ESP_LOGI("KC868_A16", "KC868-A16 initialized");
 
-    // Example: Control some outputs
-    board.setOutput(1, true); // Turn ON output 1
-    board.setOutput(2, false); // Turn OFF output 2
-
-    // Turn ON outputs 1, 3, and 5 using setAllOutputs
-    board.setAllOutputs(0b0000000000010101);
-
-    bool output_state;
-
     while (true) {
-        // Read and log the state of output 1
-        if (board.getOutput(1, output_state) == ESP_OK) {
-            ESP_LOGI("KC868_A16", "Output 1 is %s", output_state ? "ON" : "OFF");
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        cycle_outputs(board);
+        // Adjust delay to control strobe speed (currently 100ms)
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

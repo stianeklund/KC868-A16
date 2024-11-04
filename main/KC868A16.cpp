@@ -14,10 +14,25 @@ esp_err_t KC868A16::init() {
              PCF8574_R1_ADDR, PCF8574_R2_ADDR);
 
     // Scan the I2C bus first
+    ESP_LOGI(TAG, "Starting I2C scan...");
     if (const esp_err_t scan_ret = i2c_manager_.scan(); scan_ret != ESP_OK) {
         ESP_LOGE(TAG, "No I2C devices found during scan");
         return ESP_FAIL;
     }
+    
+    // Verify PCF8574 devices are present
+    uint8_t dummy;
+    if (i2c_manager_.read(PCF8574_R1_ADDR, &dummy, 1) != ESP_OK) {
+        ESP_LOGE(TAG, "PCF8574_R1 not found at address 0x%02X", PCF8574_R1_ADDR);
+        return ESP_FAIL;
+    }
+    ESP_LOGI(TAG, "Found PCF8574_R1 at address 0x%02X", PCF8574_R1_ADDR);
+    
+    if (i2c_manager_.read(PCF8574_R2_ADDR, &dummy, 1) != ESP_OK) {
+        ESP_LOGE(TAG, "PCF8574_R2 not found at address 0x%02X", PCF8574_R2_ADDR);
+        return ESP_FAIL;
+    }
+    ESP_LOGI(TAG, "Found PCF8574_R2 at address 0x%02X", PCF8574_R2_ADDR);
 
     // Initialize with all outputs OFF (HIGH due to active LOW)
     esp_err_t ret = pcf8574_1_.write(0xFF);
