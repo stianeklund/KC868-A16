@@ -25,7 +25,7 @@ esp_err_t KC868A16::init() {
     return ESP_OK;
 }
 
-esp_err_t KC868A16::setOutput(uint8_t output, bool state) {
+esp_err_t KC868A16::setOutput(uint8_t output, const bool state) {
     if (output < 1 || output > 16) {
         ESP_LOGE(TAG, "Invalid output number: %d", output);
         return ESP_ERR_INVALID_ARG;
@@ -42,7 +42,7 @@ esp_err_t KC868A16::setOutput(uint8_t output, bool state) {
     return pcf.setPin(pin, !state);
 }
 
-esp_err_t KC868A16::setAllOutputs(uint16_t states) {
+esp_err_t KC868A16::setAllOutputs(const uint16_t states) {
     // Split the 16-bit state into two 8-bit states
     // Note: We invert the states because PCF8574 is active LOW
     uint8_t states1 = ~(states & 0xFF);

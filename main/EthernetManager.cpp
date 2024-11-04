@@ -5,26 +5,27 @@
 #include "esp_eth_mac.h"
 #include "esp_eth_phy.h"
 #include "lwip/ip_addr.h"
+#include "esp_netif_sntp.h"
 
-static const char* TAG = "EthernetManager";
+static auto TAG = "EthernetManager";
 
 #define STATIC_IP               1
 
 #if STATIC_IP
-    #define S_IP        "192.168.1.5"
-    #define GATEWAY     "192.168.1.1"
-    #define NETMASK     "255.255.255.0"
+#define S_IP        "192.168.1.5"
+#define GATEWAY     "192.168.1.1"
+#define NETMASK     "255.255.255.0"
 #endif /* STATIC_IP */
 
-EthernetManager::EthernetManager(bool use_static_ip, const char* static_ip,
-                               const char* gateway, const char* netmask)
+EthernetManager::EthernetManager(const bool use_static_ip, const char *static_ip,
+                                 const char *gateway, const char *netmask)
     : eth_handle_(nullptr)
-    , eth_netif_(nullptr)
-    , event_group_(nullptr)
-    , use_static_ip_(use_static_ip)
-    , static_ip_(static_ip ? static_ip : "")
-    , gateway_(gateway ? gateway : "")
-    , netmask_(netmask ? netmask : "") {
+      , eth_netif_(nullptr)
+      , event_group_(nullptr)
+      , use_static_ip_(use_static_ip)
+      , static_ip_(static_ip ? static_ip : "")
+      , gateway_(gateway ? gateway : "")
+      , netmask_(netmask ? netmask : "") {
     event_group_ = xEventGroupCreate();
 }
 
@@ -37,7 +38,7 @@ EthernetManager::~EthernetManager() {
 esp_err_t EthernetManager::initInternal() {
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
-    
+
     phy_config.phy_addr = ETH_PHY_ADDR;
     phy_config.reset_gpio_num = ETH_PHY_RST_GPIO;
 
@@ -74,9 +75,9 @@ esp_err_t EthernetManager::initInternal() {
     return ESP_OK;
 }
 
-esp_err_t EthernetManager::configureStaticIP() {
+esp_err_t EthernetManager::configureStaticIP() const {
     if (!use_static_ip_) return ESP_OK;
-    
+
     esp_err_t ret = esp_netif_dhcpc_stop(eth_netif_);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to stop DHCP client");
@@ -86,12 +87,11 @@ esp_err_t EthernetManager::configureStaticIP() {
 #if STATIC_IP
     esp_netif_ip_info_t ip_info = {};
     memset(&ip_info, 0, sizeof(esp_netif_ip_info_t));
-    
-    esp_ip4addr_aton(static_cast<const char *>(S_IP), &ip_info.ip);
-    esp_ip4addr_aton(static_cast<const char *>(GATEWAY), &ip_info.gw);
-    esp_ip4addr_aton(static_cast<const char *>(NETMASK), &ip_info.netmask);
-    
-    if(esp_netif_set_ip_info(eth_netif_, &ip_info) != ESP_OK) {
+    ip_info.ip.addr = esp_ip4addr_aton(S_IP);
+    ip_info.gw.addr = esp_ip4addr_aton(GATEWAY);
+    ip_info.netmask.addr = esp_ip4addr_aton(NETMASK);
+
+    if (esp_netif_set_ip_info(eth_netif_, &ip_info) != ESP_OK) {
         ESP_LOGE(TAG, "Failed to set ip info");
         return ESP_FAIL;
     }
@@ -143,9 +143,8 @@ bool EthernetManager::waitForConnection(const TickType_t timeout) const {
 }
 
 void EthernetManager::eth_event_handler(void *arg, esp_event_base_t event_base,
-                                      const int32_t event_id, void *event_data)
-{
-    const auto* eth_manager = static_cast<EthernetManager*>(arg);
+                                        const int32_t event_id, void *event_data) {
+    const auto *eth_manager = static_cast<EthernetManager *>(arg);
     uint8_t mac_addr[6] = {};
     const auto eth_handle = *static_cast<esp_eth_handle_t *>(event_data);
 
@@ -172,17 +171,16 @@ void EthernetManager::eth_event_handler(void *arg, esp_event_base_t event_base,
 }
 
 void EthernetManager::got_ip_event_handler(void *arg, esp_event_base_t event_base,
-                                         int32_t event_id, void *event_data)
-{
-    const auto* eth_manager = static_cast<EthernetManager*>(arg);
+                                           int32_t event_id, void *event_data) {
+    const auto *eth_manager = static_cast<EthernetManager *>(arg);
     const auto event = static_cast<ip_event_got_ip_t *>(event_data);
-    
+
     ESP_LOGI(TAG, "Got IP Address");
     ESP_LOGI(TAG, "~~~~~~~~~~~");
     ESP_LOGI(TAG, "IP: " IPSTR, IP2STR(&event->ip_info.ip));
     ESP_LOGI(TAG, "Netmask: " IPSTR, IP2STR(&event->ip_info.netmask));
     ESP_LOGI(TAG, "Gateway: " IPSTR, IP2STR(&event->ip_info.gw));
     ESP_LOGI(TAG, "~~~~~~~~~~~");
-    
+
     xEventGroupSetBits(eth_manager->event_group_, ETHERNET_CONNECTED_BIT);
 }

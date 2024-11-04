@@ -2,10 +2,11 @@
 #include "WiFiManager.h"
 #include <cstring>
 
-WiFiManager::WiFiManager(const char* ssid, const char* password)
-        : ssid_(ssid), password_(password) {}
+WiFiManager::WiFiManager(const char *ssid, const char *password)
+    : ssid_(ssid), password_(password) {
+}
 
-esp_err_t WiFiManager::init() {
+esp_err_t WiFiManager::init() const {
     esp_err_t ret = nvs_flash_init();
     if (ret != ESP_OK) return ret;
 
@@ -22,8 +23,8 @@ esp_err_t WiFiManager::init() {
     if (ret != ESP_OK) return ret;
 
     wifi_config_t wifi_config = {};
-    strncpy((char*)wifi_config.sta.ssid, ssid_, sizeof(wifi_config.sta.ssid));
-    strncpy((char*)wifi_config.sta.password, password_, sizeof(wifi_config.sta.password));
+    strncpy(reinterpret_cast<char *>(wifi_config.sta.ssid), ssid_, sizeof(wifi_config.sta.ssid));
+    strncpy(reinterpret_cast<char *>(wifi_config.sta.password), password_, sizeof(wifi_config.sta.password));
 
     ret = esp_wifi_set_mode(WIFI_MODE_STA);
     if (ret != ESP_OK) return ret;

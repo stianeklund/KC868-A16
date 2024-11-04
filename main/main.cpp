@@ -16,7 +16,7 @@ extern "C" {
     ESP_LOGI("KC868_A16", "Starting application...");
 
     // Initialize Wi-Fi
-    WiFiManager wifiManager("your_ssid", "your_password");
+    const WiFiManager wifiManager("your_ssid", "your_password");
     ESP_ERROR_CHECK(wifiManager.init());
     ESP_LOGI("KC868_A16", "Wi-Fi initialized");
 

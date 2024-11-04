@@ -6,9 +6,11 @@
 
 class WiFiManager {
 public:
-    WiFiManager(const char* ssid, const char* password);
-    esp_err_t init();
+    WiFiManager(const char *ssid, const char *password);
+
+    [[nodiscard]] esp_err_t init() const;
+
 private:
-    const char* ssid_;
-    const char* password_;
+    const char *ssid_;
+    const char *password_;
 };

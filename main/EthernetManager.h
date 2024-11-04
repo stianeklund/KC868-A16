@@ -9,35 +9,42 @@
 class EthernetManager {
 public:
     static constexpr int ETH_PHY_ADDR = 1;
-    static constexpr int ETH_PHY_RST_GPIO = -1;  // not connected
+    static constexpr int ETH_PHY_RST_GPIO = -1; // not connected
     static constexpr int ETH_MDC_GPIO = 23;
     static constexpr int ETH_MDIO_GPIO = 18;
-    
+
+
     // Event group bits
     static constexpr int ETHERNET_CONNECTED_BIT = BIT0;
     static constexpr int ETHERNET_FAIL_BIT = BIT1;
 
-    EthernetManager(bool use_static_ip = false, 
-                   const char* static_ip = nullptr,
-                   const char* gateway = nullptr,
-                   const char* netmask = nullptr);
+    explicit EthernetManager(bool use_static_ip = false,
+                             const char *static_ip = nullptr,
+                             const char *gateway = nullptr,
+                             const char *netmask = nullptr);
+
     ~EthernetManager();
-    
+
     esp_err_t init();
 
-    esp_err_t start() const;
+    [[nodiscard]] esp_err_t start() const;
 
     esp_err_t start();
-    esp_err_t stop() const;
-    bool waitForConnection(TickType_t timeout = portMAX_DELAY) const;
+
+    [[nodiscard]] esp_err_t stop() const;
+
+    [[nodiscard]] bool waitForConnection(TickType_t timeout = portMAX_DELAY) const;
 
 private:
     static void eth_event_handler(void *arg, esp_event_base_t event_base,
-                                int32_t event_id, void *event_data);
+                                  int32_t event_id, void *event_data);
+
     static void got_ip_event_handler(void *arg, esp_event_base_t event_base,
-                                   int32_t event_id, void *event_data);
+                                     int32_t event_id, void *event_data);
+
     esp_err_t initInternal();
-    esp_err_t configureStaticIP();
+
+    [[nodiscard]] esp_err_t configureStaticIP() const;
 
     esp_eth_handle_t eth_handle_;
     esp_netif_t *eth_netif_;
