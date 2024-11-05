@@ -1,5 +1,5 @@
 // EthernetManager.cpp
-#include "EthernetManager.h"
+#include "include/EthernetManager.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "esp_eth_mac.h"
@@ -49,7 +49,7 @@ esp_err_t EthernetManager::initInternal() {
         .clock_config = {
             .rmii = {
                 .clock_mode = EMAC_CLK_OUT,
-                .clock_gpio = static_cast<emac_rmii_clock_gpio_t>(ETH_CLK_GPIO)  // Use GPIO17 for clock output
+                .clock_gpio = static_cast<emac_rmii_clock_gpio_t>(ETH_CLK_GPIO) // Use GPIO17 for clock output
             }
         },
         .dma_burst_len = ETH_DMA_BURST_LEN_32

@@ -2,13 +2,17 @@
 #include "PCF8574.h"
 #include "esp_err.h"
 
-PCF8574::PCF8574(I2CManager &i2c_manager, const uint8_t device_addr)
+namespace kc868 {
+    class I2CManager;
+}
+
+PCF8574::PCF8574(kc868::I2CManager &i2c_manager, const uint8_t device_addr)
     : i2c_manager_(i2c_manager), device_addr_(device_addr), state_(0xFF) {
 } // Initialize with all HIGH (inputs)
 
 esp_err_t PCF8574::write(const uint8_t data) {
     state_ = data;
-    esp_err_t ret = i2c_manager_.write(device_addr_, &data, 1);
+    const esp_err_t ret = i2c_manager_.write(device_addr_, &data, 1);
     if (ret != ESP_OK) {
         ESP_LOGE("PCF8574", "Write failed to address 0x%02X with data 0x%02X", device_addr_, data);
     }
@@ -16,7 +20,7 @@ esp_err_t PCF8574::write(const uint8_t data) {
 }
 
 esp_err_t PCF8574::read(uint8_t &data) const {
-    esp_err_t ret = i2c_manager_.read(device_addr_, &data, 1);
+    const esp_err_t ret = i2c_manager_.read(device_addr_, &data, 1);
     if (ret != ESP_OK) {
         ESP_LOGE("PCF8574", "Read failed from address 0x%02X", device_addr_);
     }

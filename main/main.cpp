@@ -1,32 +1,11 @@
 // main.cpp
-#include "WiFiManager.h"
-#include "EthernetManager.h"
-#include "UARTManager.h"
-#include "I2CManager.h"
-#include "PCF8574.h"
-#include "KC868A16.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "i2c_manager.h"
+#include "include/KC868A16.h"
+#include "include/WiFiManager.h"
+#include "include/UartManager.h"
 
-// cycles through the outputs 1-16 for testing purposes
-void cycle_outputs(KC868A16& board) {
-    static uint8_t current_output = 1;
-    static uint8_t previous_output = 16;
-    
-    // Turn off the previous output
-    board.setOutput(previous_output, false);
-    ESP_LOGI("STROBE", "Turning off output %d", previous_output);
-    
-    // Turn on the current output
-    board.setOutput(current_output, true);
-    ESP_LOGI("STROBE", "Turning on output %d", current_output);
-    
-    // Store current output as previous for next iteration
-    previous_output = current_output;
-    
-    // Move to next output, wrap around to 1 if we reach 17
-    current_output = (current_output % 16) + 1;
-}
 
 extern "C" {
 [[noreturn]] int app_main();
@@ -52,7 +31,7 @@ extern "C" {
     ESP_LOGI("KC868_A16", "UART initialized");
 
     // Initialize I2C
-    I2CManager i2cManager(I2C_NUM_0, GPIO_NUM_4, GPIO_NUM_5);
+    kc868::I2CManager i2cManager(I2C_NUM_0, GPIO_NUM_4, GPIO_NUM_5);
     ESP_ERROR_CHECK(i2cManager.init());
     ESP_LOGI("KC868_A16", "I2C initialized");
 
@@ -62,7 +41,7 @@ extern "C" {
     ESP_LOGI("KC868_A16", "KC868-A16 initialized");
 
     while (true) {
-        cycle_outputs(board);
+        board.cycle_outputs();
         // Adjust delay to control strobe speed (currently 100ms)
         vTaskDelay(pdMS_TO_TICKS(100));
     }

@@ -1,0 +1,9 @@
+idf_component_register(
+    SRCS 
+        "PCF8574.cpp"
+    INCLUDE_DIRS 
+        "include"
+    REQUIRES 
+        i2c_manager
+        log
+)

@@ -1,10 +1,14 @@
 // EthernetManager.h
 #pragma once
-#include "esp_eth.h"
+#include <esp_err.h>
+#include <esp_eth.h>
 #include "esp_event.h"
 #include "esp_netif.h"
-#include "freertos/event_groups.h"
+#include <stdbool.h>
 #include <string>
+
+#include "esp_bit_defs.h"
+#include "freertos/event_groups.h"
 
 class EthernetManager {
 public:

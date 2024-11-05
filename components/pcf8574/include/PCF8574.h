@@ -1,11 +1,11 @@
 // PCF8574.h
 #pragma once
-#include "I2CManager.h"
+#include "i2c_manager.h"
 #include "esp_log.h"
 
 class PCF8574 {
 public:
-    PCF8574(I2CManager &i2c_manager, uint8_t device_addr);
+    PCF8574(kc868::I2CManager &i2c_manager, uint8_t device_addr);
 
     esp_err_t write(uint8_t data);
 
@@ -16,7 +16,7 @@ public:
     esp_err_t getPin(uint8_t pin, bool &level) const;
 
 private:
-    I2CManager &i2c_manager_;
+    kc868::I2CManager &i2c_manager_;
     uint8_t device_addr_;
     uint8_t state_; // Keep track of output state
 };
